@@ -7,8 +7,8 @@ cell_symbols:
 cell_type: 'uint8'
 
 grid_shape:
-  n_row: 5
-  n_col: 5
+  n_row: 100
+  n_col: 100
 
 ca_params:
   p_fire: 0.033
