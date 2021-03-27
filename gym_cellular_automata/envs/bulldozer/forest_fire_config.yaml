@@ -52,10 +52,12 @@ mdp_internal_times:
 rewards:
   per_empty: 0.0
   per_burnt: -0.5
-  per_tree:  0.0
+  per_tree:  -1.0
   per_fire: 0.0
-  cut:  -0.5
-  fire_contact: -100.0
+  cut:  0.0
+  alive: 0.0
+
+reward_mode: "ratio"
 
 # Cellular Automata rendering options.
 cell_colors:

@@ -66,6 +66,8 @@ class BulldozerEnv(gym.Env):
     wind = generate_wind_kernel(WIND_DIRECTION, WIND_SPEED, WIND_C1)
     last_counts = None
 
+    reward_mode = CONFIG["reward_mode"]
+
     def __init__(self):
 
         self.cellular_automaton = ForestFireCellularAutomaton(
@@ -93,7 +95,7 @@ class BulldozerEnv(gym.Env):
         self.reward_per_fire = CONFIG["rewards"]["per_fire"]
         self.reward_per_burnt = CONFIG["rewards"]["per_burnt"]
         self.reward_cut = CONFIG["rewards"]["cut"]
-        self.reward_contact = CONFIG["rewards"]["fire_contact"]
+        self.reward_alive = CONFIG["rewards"]["alive"]
         print("New bulldozer env created, kernel\n {}".format(self.wind))
 
     def reset(self):
@@ -109,6 +111,7 @@ class BulldozerEnv(gym.Env):
         self.coordinator.last_lattice_update = 0
         self.modifier.contact = False
         self.last_counts = None
+        self.init_trees = Counter(self.grid.flatten().tolist())[self.tree]
 
         obs = self.grid, self.context
 
@@ -131,15 +134,21 @@ class BulldozerEnv(gym.Env):
         return obs, reward, done, info
 
     def _award(self):
+        _, _, alive = self.context
         dict_counts = Counter(self.grid.flatten().tolist())
+        reward = 0
+        
+        if self.reward_mode == "hit":
+            new_burnt = dict_counts[self.burnt] - self.last_counts[self.burnt]
+            reward += new_burnt * self.reward_per_burnt
+            reward += self.reward_per_tree * dict_counts[self.tree] if not alive else self.reward_alive
+        elif self.reward_mode == "ratio":
+            reward += self.reward_per_burnt * (dict_counts[self.burnt] / self.init_trees)
+            reward += self.reward_per_tree * (dict_counts[self.tree] / self.init_trees) if not alive else self.reward_alive
 
-        new_burnt = dict_counts[self.burnt] - self.last_counts[self.burnt]
-        self.last_counts = dict_counts
-
-        reward = new_burnt * self.reward_per_burnt
-        reward += self.modifier.contact * self.reward_contact
         reward += self.modifier.hit * self.reward_cut
 
+        self.last_counts = dict_counts   
         return reward
 
     def _is_done(self):
