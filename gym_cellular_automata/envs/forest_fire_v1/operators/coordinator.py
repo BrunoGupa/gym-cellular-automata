@@ -7,6 +7,8 @@ from gym_cellular_automata import Operator
 
 
 class Coordinator(Operator):
+    is_composition = True
+
     def __init__(
         self,
         cellular_automaton,
@@ -19,29 +21,40 @@ class Coordinator(Operator):
 
         self.suboperators = cellular_automaton, modifier
         self.cellular_automaton, self.modifier = cellular_automaton, modifier
-
+	
         self.max_freeze = max_freeze
         self.freeze_space = spaces.Discrete(max_freeze + 1)
 
     def update(self, grid, action, context):
         ca_params, mod_params, freeze = context
 
-        freeze = int(freeze)
+        if action[1] == 0:
+                freeze = int(freeze)
 
-        if freeze == 0:
+                if freeze == 0:
 
-            grid, ca_params = self.cellular_automaton(grid, action, ca_params)
+                        grid, ca_params = self.cellular_automaton(grid, action, ca_params)
 
-            grid, mod_params = self.modifier(grid, action, mod_params)
+                        grid, mod_params = self.modifier(grid, action, mod_params)
 
-            freeze = np.array(self.max_freeze)
+                        freeze = np.array(self.max_freeze)
+
+                else:
+
+                        grid, mod_params = self.modifier(grid, action, mod_params)
+
+                        freeze = np.array(freeze - 1)
+
+                        context = ca_params, mod_params, freeze
 
         else:
+                for i in range(2):#manually change this number if other integer is desired
+                        grid, ca_params = self.cellular_automaton(grid, action, ca_params)
 
-            grid, mod_params = self.modifier(grid, action, mod_params)
+                        context = ca_params, mod_params, freeze
 
-            freeze = np.array(freeze - 1)
+                grid, mod_params = self.modifier(grid, action, mod_params)
 
-        context = ca_params, mod_params, freeze
+                context = ca_params, mod_params, freeze
 
         return grid, context
