@@ -141,10 +141,15 @@ class BulldozerEnv(gym.Env):
         if self.reward_mode == "hit":
             new_burnt = dict_counts[self.burnt] - self.last_counts[self.burnt]
             reward += new_burnt * self.reward_per_burnt
-            reward += self.reward_per_tree * dict_counts[self.tree] if not alive else self.reward_alive
+            reward += self.reward_per_tree * dict_counts[self.tree] if not alive else 0.0
         elif self.reward_mode == "ratio":
             reward += self.reward_per_burnt * (dict_counts[self.burnt] / self.init_trees)
-            reward += self.reward_per_tree * (dict_counts[self.tree] / self.init_trees) if not alive else self.reward_alive
+            reward += self.reward_per_tree * (dict_counts[self.tree] / self.init_trees) if not alive else 0.0
+        elif self.reward_mode == "alive":
+            reward += self.reward_per_burnt * (dict_counts[self.burnt] / self.init_trees)
+
+        reward += self.modifier.hit * self.reward_cut
+        reward += alive * self.reward_alive
 
         reward += self.modifier.hit * self.reward_cut
 
@@ -170,6 +175,37 @@ class BulldozerEnv(gym.Env):
         pos, _, _ = self.context
 
         figure = add_helicopter(plot_grid(self.grid), pos)
-        plt.show()
+        if mode == "human":
+            plt.ion()
+            plt.show()
+            return figure
+        if mode == "rgb_array":
+            canvas = plt.gca().figure.canvas
+            canvas.draw()
+            data = np.frombuffer(canvas.tostring_rgb(), dtype=np.uint8)
+            image = data.reshape(canvas.get_width_height()[::-1] + (3,))
+            plt.clf()
+            return image
 
-        return figure
+    def get_keys_to_action(self):
+
+        keys_to_action = {}
+
+        for meaning in self.KEYWORD_TO_KEY.keys():
+            keys = tuple(sorted(self.KEYWORD_TO_KEY[meaning]))
+            keys_to_action[keys] = CONFIG["actions"][meaning]
+
+        return keys_to_action
+
+    KEYWORD_TO_KEY = {
+            'up':      [ord('w')],
+            'down':    [ord('s')],
+            'left':    [ord('a')],
+            'right':   [ord('d')],
+            'cut':    [ord(' ')],
+            "not_move": [ord("e")],
+            "up_left": [ord("w"), ord("a")],
+            "up_right": [ord("w"), ord("d")],
+            "down_left": [ord("s"), ord("a")],
+            "down_right": [ord("s"), ord("d")],
+        }
