@@ -28,18 +28,22 @@ class CAEnv(ABC, gym.Env):
         if not self.done:
 
             # MDP Transition
-            self.state = self.grid, self.context = self.MDP(
+            self.state = self.old_grid, self.grid, self.context = self.MDP(
                 self.grid, action, self.context
             )
 
+            # Actualize the step counter
+            self.steps_beyond_done -= 1
+            
             # Check for termination
             self._is_done()
-
+            
             # Gym API Formatting
             obs = self.state
             reward = self._award()
             done = self.done
             info = self._report()
+            
 
             return obs, reward, done, info
 
@@ -62,10 +66,11 @@ class CAEnv(ABC, gym.Env):
     def reset(self):
 
         self.done = False
-        self.steps_beyond_done = 0
+        self.steps_beyond_done = self._max_steps
         self._resample_initial = True
-        obs = self.state = self.grid, self.context = self.initial_state
-
+        grid,(ca_params, _, freeze) = self.initial_state
+        obs = self.state = self.grid, self.context = grid, (ca_params, None, freeze)
+        
         return obs
 
     def seed(self, seed=None):
@@ -116,8 +121,8 @@ class MockCAEnv(CAEnv):
         if self._resample_initial:
 
             self.grid = self.grid_space.sample()
-            self.context = self.context_space.sample()
-
+            ca_params, _, freeze =  self.context_space.sample()
+            self.context = ca_params, None, freeze
             self._initial_state = self.grid, self.context
             self._resample_initial = False
 
