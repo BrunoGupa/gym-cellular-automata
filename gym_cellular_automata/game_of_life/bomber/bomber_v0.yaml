@@ -1,0 +1,28 @@
+cell_states: 2
+
+cell_symbols:
+  dead: 0
+  alive:  1
+
+episode_params:
+  max_steps:  100
+
+grid_shape:
+  n_row: 16
+  n_col: 16
+
+ca_params:
+  p_live: 0.5
+
+# Modifier"s effects
+# Change FIRE to EMPTY
+effects:
+  alive: "dead"
+
+
+# Steps that the Cellular Automaton remains idle.
+max_freeze: 0
+
+rewards:
+  per_dead: 0.0
+  per_alive:  1.0
