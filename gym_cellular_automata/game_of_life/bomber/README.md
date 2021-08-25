@@ -1,6 +1,6 @@
 # Forest Fire Environment Helicopter V0 #
 
-![Forest Fire Helicopter](./../../../pics/render_helicopter.svg)
+![Bomber: Game of Life](./../../../pics/render_helicopter.svg)
 
 ## Description ##
 
