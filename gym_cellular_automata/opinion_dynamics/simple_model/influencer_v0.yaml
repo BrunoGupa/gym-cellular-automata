@@ -1,0 +1,31 @@
+# Integer in the set {2,3,4,5}
+num_opinions: 5
+
+effects: #integer into [0,...,num_opinions-1]
+  target_opinion:   2
+  influencer_opinion: 2
+ 
+neighborhood: 
+  #if False it's moore neighborhood
+  #if True the von Neumann neighborhood
+  von_Neumann: True
+
+
+episode_params:
+  max_steps:  100
+
+grid_shape:
+  n_row: 25
+  n_col: 25
+
+ca_params:
+  #neiborhood = von_neuman or Moore
+  #distribution_of_opininos = uniform by default
+
+
+# Steps that the Cellular Automaton remains idle.
+max_freeze: 0
+
+rewards:
+  per_target_opinion: 1.0
+  per_other_opinion:  0.0
